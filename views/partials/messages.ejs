@@ -1,0 +1,12 @@
+<script>
+  $error =
+    "<%= typeof messages.error != 'undefined' ? messages.error : null %>";
+  if ($error) {
+    alert($error);
+  }
+  $success =
+    "<%= typeof messages.success != 'undefined' ? messages.success : null %>";
+  if ($success) {
+    alert($success);
+  }
+</script>
