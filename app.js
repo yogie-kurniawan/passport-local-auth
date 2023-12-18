@@ -16,7 +16,7 @@ const notFoundRoute = require("./routes/not-found");
 app.set("views", "./views");
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
-// Cookie
+
 // Session
 app.use(
   session({
@@ -27,17 +27,18 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Connect-flash for flash messages
-app.use(flash());
-
 // Initialize passport;
 initializePassport();
+
+// Connect-flash for flash messages
+app.use(flash());
 
 // middleware to make 'user' available to all templates
 app.use(function (req, res, next) {
   res.locals.user = req.user;
   next();
 });
+
 // Parse JSON
 app.use(express.json());
 // Parse Form Data
