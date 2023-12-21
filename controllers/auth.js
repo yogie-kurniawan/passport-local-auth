@@ -4,7 +4,7 @@ const User = require("../models/User");
 const saltRounds = parseInt(process.env.SALT_ROUNDS);
 
 const getRegister = (req, res) => {
-  return res.render("pages/register");
+  return res.render("pages/register",{error : req.flash("error")});
 };
 
 const postRegister = async (req, res) => {
@@ -60,7 +60,7 @@ const postRegister = async (req, res) => {
 };
 
 const getLogin = (req, res) => {
-  return res.render("pages/login", { messages: { error: null } });
+  return res.render("pages/login", { messages: { error: req.flash("error") } });
 };
 
 const postLogin = async (req, res) => {
