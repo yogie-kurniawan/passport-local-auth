@@ -7,6 +7,7 @@ function initializePassport() {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
+        console.log("yguuy uyu");
         const user = await User.findOne({ username: username });
         if (!user) {
           return done(null, false, { message: "User not found!" });

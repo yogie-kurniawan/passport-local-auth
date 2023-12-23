@@ -4,36 +4,55 @@ const User = require("../models/User");
 const saltRounds = parseInt(process.env.SALT_ROUNDS);
 
 const getRegister = (req, res) => {
-  return res.render("pages/register",{error : req.flash("error")});
+  return res.render("pages/register", { error: req.flash("error") });
 };
 
 const postRegister = async (req, res) => {
   const { name, username, password, email } = req.body;
+  let errors = {};
 
   // Validation
   if (!name) {
-    req.flash("error", "Name is required!");
-    return redirect("/register");
+    errors.name = { msg: "Name is required!" };
   }
   if (!username) {
-    req.flash("error", "Username is required!");
-    return redirect("/register");
+    errors.username = { msg: "Username is required!" };
   }
   if (!email) {
-    req.flash("error", "Email is required!");
-    return redirect("/register");
-  }
-  if (email) {
-    const regexCode =
-      '/^(([^<>()[]\\.,;:s@"]+(.[^<>()[]\\.,;:s@"]+)*)|(".+"))@(([[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}])|(([a-zA-Z-0-9]+.)+[a-zA-Z]{2,}))$/';
-    if (!username.match(regexCode)) {
-      req.flash("error", "Email is not valid!");
-      return redirect("/register");
-    }
+    errors.email = { msg: "Email is required!" };
+  } else if (!email.match(/^\S+@\S+\.\S+$/)) {
+    errors.email = { msg: "Email is not valid!" };
   }
   if (!password) {
-    req.flash("error", "Password is required!");
-    return redirect("/register");
+    errors.password = { msg: "Password is required!" };
+  }
+
+  try {
+    let valueExists = async (field, value) => {
+      return await User.findOne({ [field]: value });
+    };
+
+    if (await valueExists("username", username)) {
+      errors.username = { msg: "Username already exists!" };
+    }
+    if (await valueExists("email", email)) {
+      errors.email = { msg: "Email already exists!" };
+    }
+  } catch (error) {
+    console.log(error);
+    req.flash("error", "Failed to register!");
+    return res.redirect("/register");
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return res.render("pages/register", {
+      errors,
+      name,
+      username,
+      email,
+      password,
+      error: req.flash("error"),
+    });
   }
 
   try {
@@ -44,23 +63,27 @@ const postRegister = async (req, res) => {
       email,
       password: hashedPassword,
     });
-
-    const save = await newUser.save();
-    if (save) {
-      req.flash("success", "Registration successful!");
-      return res.redirect("/login");
-    } else {
-      req.flash("error", "Registration failed!");
-      return redirect("/register");
-    }
-  } catch (error) {
-    req.flash("error", error.message);
-    return redirect("/register");
+    const savedUser = await newUser.save();
+    req.flash("success", "Registration successful!");
+    return res.redirect("/login");
+  } catch (err) {
+    req.flash("error", err.message);
+    return res.render("pages/register", {
+      errors,
+      name,
+      username,
+      email,
+      password,
+      error: req.flash("error"),
+    });
   }
 };
 
 const getLogin = (req, res) => {
-  return res.render("pages/login", { messages: { error: req.flash("error") } });
+  return res.render("pages/login", {
+    error: req.flash("error"),
+    success: req.flash("success"),
+  });
 };
 
 const postLogin = async (req, res) => {
@@ -72,8 +95,7 @@ const postLogin = async (req, res) => {
 };
 
 const logout = (req, res, next) => {
-  req.session.destroy();
-  res.clearCookie("token");
+  req.logOut();
   return res.redirect("/login");
 };
 

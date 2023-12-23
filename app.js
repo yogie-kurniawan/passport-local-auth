@@ -26,14 +26,14 @@ app.use(
   })
 );
 
+// Connect-flash for flash messages
+app.use(flash());
+
 app.use(passport.initialize());
 app.use(passport.session());
 
 // Initialize passport;
-initializePassport();
-
-// Connect-flash for flash messages
-app.use(flash());
+console.log(initializePassport());
 
 // middleware to make 'user' available to all templates
 app.use(function (req, res, next) {
